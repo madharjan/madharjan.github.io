@@ -1,1 +1,24 @@
+
+title: Madharjan
+url: "https://madharjan.github.io" 
+description: Documentation on Github Projects
+# the subpath of your site, e.g. /blog
+#baseurl: "/blog" 
+
+
+search_enabled: true
+aux_links:
+  "View Projects on GitHub":
+    - "//github.com/madharjan"
+
 remote_theme: pmarsceill/just-the-docs
+color_scheme: nil
+
+# Google Analytics Tracking 
+ga_tracking: 
+
+plugins:
+  - jekyll-seo-tag
+
+permalink: pretty
+exclude: ["node_modules/", "*.gemspec", "*.gem", "Gemfile", "Gemfile.lock", "package.json", "package-lock.json",  "script/", "LICENSE", "lib/", "bin/", "Makefile", "Rakefile"]
