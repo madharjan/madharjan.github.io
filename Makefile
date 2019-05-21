@@ -7,7 +7,7 @@ DEBUG ?= true
 ## config
 SITE = _site
 
-.PHONY: all build run tests clean install
+.PHONY: all build run test clean install
 
 all: build
 
@@ -17,7 +17,7 @@ build:
 run:
 	jekyll serve --destination $(SITE) --watch
 
-tests:
+test:
 
 clean: 
 	jekyll clean

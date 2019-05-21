@@ -5,6 +5,7 @@ parent: Vagrant
 grand_parent: Projects
 nav_order: 1
 ---
+
 # vagrant-ubuntu
 
 Ubuntu 16.04 for Development (DevOps)
@@ -16,6 +17,7 @@ Ubuntu 16.04 for Development (DevOps)
 * wget - v1.17.1
 * curl - v7.47
 * dos2unix - v6.0.4
+* squid - v3.5.12
 * tree - v1.7.0
 * docker - v18.09.2
 * java7 - OpenJDK v1.8.0_191
@@ -33,9 +35,11 @@ Ubuntu 16.04 for Development (DevOps)
 
 * Vagrant Plugins
   * vagrant-vbguest
+  * vagrant-proxyconf
 
  ```bash
  vagrant plugin install vagrant-vbguest
+ vagrant plugin install vagrant-proxyconf
  ```
 
 ## Clone this project
@@ -43,11 +47,18 @@ Ubuntu 16.04 for Development (DevOps)
 ```bash
 git clone https://github.com/madharjan/vagrant-ubuntu
 cd vagrant-ubuntu
+
+
 ```
 
 ### Provision VM
 
 ```bash
+## proxy configuration if necessary
+#export http_proxy="http://username:password@proxy.company.com:8080"
+#export https_proxy="http://username:password@proxy.company.com:8080"
+#export no_proxy="localhost,127.0.0.1"
+
 vagrant up
 ```
 
@@ -57,6 +68,8 @@ vagrant up
  export WORKSPACE_ROOT='<workspace location>'
  # e.g. export WORKSPACE_ROOT='D:\Workspace'
  #      export WORKSPACE_ROOT='/Users/username/Workspace'
+
+unset http_proxy https_proxy no_proxy
 vagrant reload
 ```
 
@@ -64,6 +77,11 @@ vagrant reload
 
 ```bash
 vagrant ssh
+
+## enable proxy configuration if necessary
+#squid-proxy-enable <proxy-server> <proxy-port> [username] [password]
+## to disable
+#squid-proxy-disable
 
 vagrant@devops:~$ cd /workspace/<project>
 ```

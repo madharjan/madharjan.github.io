@@ -58,8 +58,6 @@ cd doocker-mail
 
 **Build Container**
 ```
-# login to DockerHub
-docker login
 
 # build
 make
