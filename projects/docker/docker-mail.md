@@ -5,180 +5,135 @@ parent: Docker
 grand_parent: Projects
 nav_order: 9
 ---
-# docker-mail
+# docker-mysql
 
-[![](https://images.microbadger.com/badges/image/madharjan/docker-mail.svg)](https://microbadger.com/images/madharjan/docker-mail "Get your own image badge on microbadger.com")
+[![Build Status](https://travis-ci.com/madharjan/docker-mysql.svg?branch=master)](https://travis-ci.com/madharjan/docker-mysql)
+[![Layers](https://images.microbadger.com/badges/image/madharjan/docker-mysql.svg)](http://microbadger.com/images/madharjan/docker-mysql)
 
-Docker container for Postfix SMTP & Dovecot IMAP/POP3 based on [madharjan/docker-base](https://github.com/madharjan/docker-base/)
+Docker container for MySQL Server based on [madharjan/docker-base](https://github.com/madharjan/docker-base/)
 
-Mail Server configuration based on [tomav/docker-mailserver](https://github.com/tomav/docker-mailserver)
+## Features
 
-**Changes**
-* Services configured as `runit` services
-* Scripts refactor-ed for baseimage `docker-base`
+* Environment variables to create database, user and set password
+* Bats [bats-core/bats-core](https://github.com/bats-core/bats-core) based test cases
 
-**Features**
-* Using scripts in `my_init.d` to initialize services (e.g mail-startup.sh)
-* Using scripts in `my_shutdown.d` to cleanup services before container stop (e.g postfix-stop.sh)
-* Bats ([sstephenson/bats](https://github.com/sstephenson/bats/)) based test cases
+## MySQL Server 5.7 (docker-mysql)
 
-## Postfix 2.11 & Dovecot 2.2.9 (docker-mail)
- - SpamAssassin 3.4.0
- - ClamAV 0.99.2
- - Fail2Ban 0.8.11
- - Manage Sieve 2.2.9
- - Certbot SSL
- - OpenDKIM 2.9.1
- - OpenDMARC 1.2.0
+### Environment
 
-**Environment**
-
-| Variable                  | Default | Example        |
-|---------------------------|---------|----------------|
-| DISABLE_AMAVIS            |         | 1 (to disable) |
-| DISABLE_CLAMAV            |         | 1 (to disable) |
-| DISABLE_SPAMASSASSIN      |         | 1 (to disable) |
-| ENABLE_FAIL2BAN           |         | 1 (to enable)  |
-| ENABLE_MANAGESIEVE        |         | 1 (to enable)  |
-| ENABLE_POP3               |         | 1 (to enable)  |
-| SMTP_ONLY                 |         | 1 (to enable)  |
-| SSL_TYPE                  |         | certbot        |
-| SASL_PASSWD               |         | Pa$$           |
-| SA_TAG                    |         | 2.0            |
-| SA_TAG2                   |         | 6.31           |
-| SA_KILL                   |         | 6.31           |
+| Variable        | Default      | Example        |
+|-----------------|--------------|----------------|
+| DISABLE_MYSQL   | 0            | 1 (to disable) |
+| MYSQL_DATABASE  | temp         | mydb           |
+| MYSQL_USERNAME  | mysql        | myuser         |
+| MYSQL_PASSWORD  | mysql        | mypass         |
 
 ## Build
 
-**Clone this project**
-```
-git clone https://github.com/madharjan/docker-mail
-cd doocker-mail
-```
-
-**Build Container**
-```
+```bash
+# clone project
+git clone https://github.com/madharjan/docker-mysql
+cd docker-mysql
 
 # build
 make
 
-# test
+# tests
+make run
 make test
 
-# tag
-make tag_latest
-
-
-# release
-make release
+# clean
+make clean
 ```
 
-**Tag and Commit to Git**
-```
-git tag 2.11-2.2.9
-git push origin 2.11-2.2.9
-```
+## Run
 
-## Run Container
+**Note**: update environment variables below as necessary
 
-### Postfix SMTP, Dovecot IMAP/POP3
+```bash
+# prepare foldor on host for container volumes
+sudo mkdir -p /opt/docker/mysql/etc/conf.d
+sudo mkdir -p /opt/docker/mysql/lib/
+sudo mkdir -p /opt/docker/mysql/log/
 
-**Run Certbot to create SSL certificate for `mail.${DOMAIN}`**
-```
-docker exec --rm \
-   -e EMAIL=me@email.com \
-   -e DOMAIN=company.com \
-   -p 80:80 \
-   -p 443:443 \
-   -v /opt/docker/certbot:/etc/certbot \
-   madharjan/doocker-mail:2.11-2.2.9 /bin/sh -c "/usr/local/sbin/certbot-auto certonly -n --no-self-upgrade --agree-tos --standalone --config-dir /etc/certbot --logs-dir /var/log/certbot -m ${EMAIL} -d mail.${DOMAIN}"
-```
+# stop & remove previous instances
+docker stop mysql
+docker rm mysql
 
-**Generate DKIM keys**
-```
-docker run --rm \
-  -v /opt/docker/mail/config:/tmp/config \
-  madharjan/doocker-mail:2.11-2.2.9 /bin/sh -c "generate-dkim-config"
-```
-DKIM keys are generated, configure DNS server with DKIM keys from `config/opedkim/keys/domain.tld/mail.txt`
-
-**Create mail users**
-```
-docker exec --rm \
-   -e USERNAME=user1 \
-   -e DOMAIN=company.com \
-   -e PASSWORD=password \
-   -v /opt/docker/mail/config:/tmp/config \
-   madharjan/doocker-mail:2.11-2.2.9 /bin/sh -c "addmailuser ${USERNAME}@${DOMAIN} ${PASSWORD}"
-```
-
-**Run `docker-mail` container**
-```
-docker stop mail
-docker rm mail
-
+# run container
 docker run -d \
-  -e ENABLE_POP3=1 \
-  -e ENABLE_FAIL2BAN=1 \
-  -e ENABLE_MANAGESIEVE=1 \
-  -e SA_TAG=2.0 \
-  -e SA_TAG2=6.31 \
-  -e SA_KILL=6.31\
-  -e SASL_PASSWD=mysaslpassword \
-  -e SMTP_ONLY= \
-  -e SSL_TYPE=certbot \
-  -p 25:25 \
-  -p 587:587 \
-  -p 993:993 \
-  -p 995:995 \
-  -v /opt/docker/mail/config:/tmp/config \
-  -v /opt/docker/mail/data:/var/mail \
-  -v /opt/docker/mail/log:/var/log/mail \
-  -v /opt/docker/certbot:/etc/certbot \
-  --hostname mail.${DOMAIN}
-  --name mail \
-  madharjan/docker-mail:2.11-2.2.9
+  -e MYSQL_DATABASE=mydb \
+  -e MYSQL_USERNAME=user \
+  -e MYSQL_PASSWORD=pass \
+  -p 3306:3306 \
+  -v /opt/docker/mysql/etc/conf.d:/etc/mysql/conf.d \
+  -v /opt/docker/mysql/lib:/var/lib/mysql \
+  -v /opt/docker/mysql/log:/var/log/mysql \
+  --name mysql \
+  madharjan/docker-mysql:5.5
 ```
 
-**Systemd Unit File**
-```
+## Systemd Unit File
+
+**Note**: update environment variables below as necessary
+
+```txt
 [Unit]
-Description=Mail
+Description=MySQL Server
 
 After=docker.service
 
 [Service]
 TimeoutStartSec=0
 
-ExecStartPre=-/bin/mkdir -p /opt/docker/mail
-ExecStartPre=-/usr/bin/docker stop mail
-ExecStartPre=-/usr/bin/docker rm mail
-ExecStartPre=-/usr/bin/docker pull madharjan/docker-mail:2.11-2.2.9
+ExecStartPre=-/bin/mkdir -p /opt/docker/mysql/etc/conf.d
+ExecStartPre=-/bin/mkdir -p /opt/docker/mysql/lib
+ExecStartPre=-/bin/mkdir -p /opt/docker/mysql/log
+ExecStartPre=-/usr/bin/docker stop mysql
+ExecStartPre=-/usr/bin/docker rm mysql
+ExecStartPre=-/usr/bin/docker pull madharjan/docker-mysql:5.7
 
 ExecStart=/usr/bin/docker run \
-  -e ENABLE_POP3=1 \
-  -e ENABLE_FAIL2BAN=1 \
-  -e ENABLE_MANAGESIEVE=1 \
-  -e SA_TAG=2.0 \
-  -e SA_TAG2=6.31 \
-  -e SA_KILL=6.31\
-  -e SASL_PASSWD=mysaslpassword \
-  -e SMTP_ONLY= \
-  -e SSL_TYPE=certbot \
-  -p 25:25 \
-  -p 587:587 \
-  -p 993:993 \
-  -p 995:995 \
-  -v /opt/docker/mail/config:/tmp/config \
-  -v /opt/docker/mail/data:/var/mail \
-  -v /opt/docker/mail/log:/var/log/mail \
-  -v /opt/docker/certbot:/etc/certbot \
-  --hostname mail.${DOMAIN}
-  --name mail \
-  madharjan/docker-mail:2.11-2.2.9
+  -e MYSQL_DATABASE=mydb \
+  -e MYSQL_USERNAME=user \
+  -e MYSQL_PASSWORD=pass \
+  -p 3306:3306 \
+  -v /opt/docker/mysql/etc/conf.d:/etc/mysql/conf.d \
+  -v /opt/docker/mysql/lib/:/var/lib/mysql \
+  -v /opt/docker/mysql/log:/var/log/mysql \
+  --name mysql \
+  madharjan/docker-mysql:5.7
 
-ExecStop=/usr/bin/docker stop -t 2 mail
+ExecStop=/usr/bin/docker stop -t 2 mysql
 
 [Install]
 WantedBy=multi-user.target
+```
+
+## Generate Systemd Unit File
+
+| Variable            | Default          | Example                                                          |
+|---------------------|------------------|------------------------------------------------------------------|
+| PORT                | 3306             | 8080                                                             |
+| VOLUME_HOME         | /opt/docker      | /opt/data                                                        |
+| NAME                | mysql            | docker-mysql                                                           |
+| MYSQL_DATABASE      | temp             | mydb                                                             |
+| MYSQL_USERNAME      | mysql            | user                                                             |
+| MYSQL_PASSWORD      | mysql            | pass                                                             |
+
+```bash
+# generate postgresql.service
+docker run --rm \
+  -e PORT=3306 \
+  -e VOLUME_HOME=/opt/docker \
+  -e NAME=docker-mysql \
+  -e MYSQL_DATABASE=mydb \
+  -e MYSQL_USERNAME=user \
+  -e MYSQL_PASSWORD=pass \
+  madharjan/docker-mysql:5.7 \
+  mysql-systemd-unit | \
+  sudo tee /etc/systemd/system/mysql.service
+
+sudo systemctl enable mysql
+sudo systemctl start mysql
 ```

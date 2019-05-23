@@ -4,6 +4,7 @@ title: Virtualization using Libvirt
 parent: Others
 grand_parent: Projects
 nav_order: 1
+permalink: /projects/others/virtualization
 ---
 
 # Libvirt Virtualization

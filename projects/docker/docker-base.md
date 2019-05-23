@@ -67,4 +67,3 @@ docker run -d \
   --name base madharjan/docker-base:16.04 \
   /sbin/my_init --log-level 3
 ```
-

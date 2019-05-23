@@ -3,6 +3,8 @@ layout: default
 title: OpenStack on a Machine
 parent: Others
 grand_parent: Projects
+has_children: true
+permalink: /projects/others/openstack
 nav_order: 2
 ---
 # Openstack Setup
