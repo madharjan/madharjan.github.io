@@ -6,7 +6,7 @@ grand_parent: Projects
 nav_order: 1
 ---
 
-# vagrant-ubuntu
+# vagrant-devops
 
 Ubuntu 16.04 for Development (DevOps)
 
@@ -45,8 +45,8 @@ Ubuntu 16.04 for Development (DevOps)
 ## Clone this project
 
 ```bash
-git clone https://github.com/madharjan/vagrant-ubuntu
-cd vagrant-ubuntu
+git clone https://github.com/madharjan/vagrant-devops
+cd vagrant-devops
 
 
 ```
